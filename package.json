@@ -1,22 +1,24 @@
 {
   "name": "bootstrap-hover-dropdown",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "An unofficial Bootstrap plugin to enable Bootstrap dropdowns to activate on hover and provide a nice user experience.",
   "main": "bootstrap-hover-dropdown.js",
-  "dependencies": {
-    "streamqueue": "^0.1.1"
-  },
   "devDependencies": {
-    "gulp": "^3.8.10",
-    "gulp-bump": "^0.1.13",
-    "gulp-filter": "^2.0.0",
-    "gulp-git": "^0.5.6",
-    "gulp-rename": "^1.2.0",
+    "gulp": "^4.0.2",
+    "gulp-bump": "^3.2.0",
+    "gulp-filter": "^8.0.0",
+    "gulp-git": "^2.10.1",
+    "gulp-rename": "^2.0.0",
+    "gulp-replace": "^1.1.4",
     "gulp-tag-version": "^1.2.1",
-    "gulp-uglify": "^1.1.0",
-    "streamqueue": "^0.1.1"
+    "gulp-uglify": "^3.0.2",
+    "streamqueue": "^1.1.2"
   },
   "scripts": {
+    "build": "gulp",
+    "patch": "gulp patch",
+    "minor": "gulp feature",
+    "major": "gulp release",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -37,5 +39,9 @@
   "bugs": {
     "url": "https://github.com/CWSpear/bootstrap-hover-dropdown/issues"
   },
-  "homepage": "https://github.com/CWSpear/bootstrap-hover-dropdown"
+  "homepage": "https://github.com/CWSpear/bootstrap-hover-dropdown",
+  "peerDependencies": {
+    "bootstrap": "^3.4.1",
+    "jquery": "^3.7.0"
+  }
 }

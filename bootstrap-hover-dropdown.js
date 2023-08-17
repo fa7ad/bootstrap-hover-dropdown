@@ -2,17 +2,17 @@
  * @preserve
  * Project: Bootstrap Hover Dropdown
  * Author: Cameron Spear
- * Version: v2.2.1
+ * Version: v2.2.2
  * Contributors: Mattia Larentis
  * Dependencies: Bootstrap's Dropdown plugin, jQuery
  * Description: A simple plugin to enable Bootstrap dropdowns to active on hover and provide a nice user experience.
  * License: MIT
  * Homepage: http://cameronspear.com/blog/bootstrap-dropdown-on-hover-plugin/
  */
-;(function ($, window, undefined) {
+;(function ($, window) {
     // outside the scope of the jQuery plugin to
     // keep track of all dropdowns
-    var $allDropdowns = $();
+    let $allDropdowns = $();
 
     // if instantlyCloseOthers is true, then it will instantly
     // shut other nav items when a new one is hovered over
@@ -45,7 +45,7 @@
                 settings = $.extend(true, {}, defaults, options, data),
                 timeout, timeoutHover;
 
-            $parent.hover(function (event) {
+            $parent.on('hover', function (event) {
                 // so a neighbor can't open the dropdown
                 if(!$parent.hasClass('open') && !$this.is(event.target)) {
                     // stop this event, stop executing any code
@@ -65,7 +65,7 @@
             });
 
             // this helps with button groups!
-            $this.hover(function (event) {
+            $this.on('hover', function (event) {
                 // this helps prevent a double event from firing.
                 // see https://github.com/CWSpear/bootstrap-hover-dropdown/issues/55
                 if(!$parent.hasClass('open') && !$parent.is(event.target)) {
@@ -79,22 +79,22 @@
 
             // handle submenus
             $parent.find('.dropdown-submenu').each(function (){
-                var $this = $(this);
-                var subTimeout;
-                $this.hover(function () {
+                const $this = $(this);
+                let subTimeout;
+                $this.on('hover', function () {
                     window.clearTimeout(subTimeout);
                     $this.children('.dropdown-menu').show();
                     // always close submenu siblings instantly
                     $this.siblings().children('.dropdown-menu').hide();
                 }, function () {
-                    var $submenu = $this.children('.dropdown-menu');
+                    const $submenu = $this.children('.dropdown-menu');
                     subTimeout = window.setTimeout(function () {
                         $submenu.hide();
                     }, settings.delay);
                 });
             });
 
-            function openDropdown(event) {
+            function openDropdown() {
                 if($this.parents(".navbar").find(".navbar-toggle").is(":visible")) {
                     // If we're inside a navbar, don't do anything when the
                     // navbar is collapsed, as it makes the navbar pretty unusable.
@@ -108,7 +108,7 @@
                 
                 // delay for hover event.  
                 timeoutHover = window.setTimeout(function () {
-                    $allDropdowns.find(':focus').blur();
+                    $allDropdowns.find(':focus').trigger('blur');
 
                     if(settings.instantlyCloseOthers === true)
                         $allDropdowns.removeClass('open');
@@ -123,7 +123,7 @@
         });
     };
 
-    $(document).ready(function () {
+    $(function () {
         // apply dropdownHover to all elements with the data-hover="dropdown" attribute
         $('[data-hover="dropdown"]').dropdownHover();
     });

@@ -1,30 +1,25 @@
-var gulp   = require('gulp');
-var uglify = require('gulp-uglify');
-var rename = require('gulp-rename');
- 
-gulp.task('default', function() {
-    return gulp.src('bootstrap-hover-dropdown.js')
+import fs from 'node:fs';
+import { spawn } from 'node:child_process';
+import gulp from 'gulp';
+import bump from 'gulp-bump';
+import git from 'gulp-git';
+import uglify from 'gulp-uglify';
+import rename from 'gulp-rename';
+import filter from 'gulp-filter';
+import replace from 'gulp-replace';
+import streamqueue from 'streamqueue';
+import tagVersion from 'gulp-tag-version';
 
+gulp.task('default', () =>
+    gulp
+        .src('bootstrap-hover-dropdown.js')
         // minifiy preserving preserved comments
-        .pipe(uglify({
-            preserveComments: 'some'
-        }))
-
+        .pipe(uglify({ output: { comments: 'some' } }))
         // rename to .min.
         .pipe(rename('bootstrap-hover-dropdown.min.js'))
-        
-        .pipe(gulp.dest('.'));
-});
+        .pipe(gulp.dest('.'))
+);
 
-
-var fs          = require('fs');
-var bump        = require('gulp-bump');
-var filter      = require('gulp-filter');
-var git         = require('gulp-git');
-var tagVersion  = require('gulp-tag-version');
-var replace     = require('gulp-replace');
-var streamqueue = require('streamqueue');
- 
 /**
  * Bumping version number and tagging the repository with it.
  * Please read http://semver.org/
@@ -42,48 +37,56 @@ function increment(importance) {
     var packages = ['package.json', 'bower.json', 'composer.json'];
     var currentVersion = JSON.parse(fs.readFileSync('bower.json')).version;
 
-    // get all the files to bump version in 
+    // get all the files to bump version in
     gulp.src(packages)
 
-        // bump the version number in those files 
+        // bump the version number in those files
         .pipe(bump({ type: importance }))
 
-        // save it back to filesystem 
+        // save it back to filesystem
         .pipe(gulp.dest('.'))
 
         .on('end', function () {
             var newVersion = JSON.parse(fs.readFileSync('bower.json')).version;
 
             var packagesStream = gulp.src(packages);
-            
-            var jsStream = gulp.src(['bootstrap-hover-dropdown.js', 'bootstrap-hover-dropdown.min.js'])
+
+            var jsStream = gulp
+                .src(['bootstrap-hover-dropdown.js', 'bootstrap-hover-dropdown.min.js'])
 
                 // replace version # in the JS files
                 .pipe(replace('Version: v' + currentVersion, 'Version: v' + newVersion))
 
-                // save it back to filesystem 
+                // save it back to filesystem
                 .pipe(gulp.dest('.'));
 
             // merge the streams together to commit
             streamqueue({ objectMode: true }, jsStream, packagesStream)
+                // commit the changed version number
+                .pipe(git.commit("bump packages' version"))
 
-                // commit the changed version number 
-                .pipe(git.commit('bump packages\' version'))
-                
-                // read only one file to get the version number 
+                // read only one file to get the version number
                 .pipe(filter('package.json'))
 
-                // **tag it in the repository** 
+                // **tag it in the repository**
                 .pipe(tagVersion())
 
                 // run npm publish
                 .on('end', function () {
-                    var spawn = require('child_process').spawn;
                     spawn('npm', ['publish'], { stdio: 'inherit' });
                 });
         });
 }
- 
-gulp.task('patch',   ['default'], function() { return increment('patch'); });
-gulp.task('feature', ['default'], function() { return increment('minor'); });
-gulp.task('release', ['default'], function() { return increment('major'); });
+
+gulp.task(
+    'patch',
+    gulp.series('default', () => increment('patch'))
+);
+gulp.task(
+    'feature',
+    gulp.series('default', () => increment('minor'))
+);
+gulp.task(
+    'release',
+    gulp.series('default', () => increment('major'))
+);
